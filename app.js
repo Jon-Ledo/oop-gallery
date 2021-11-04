@@ -12,10 +12,13 @@ function Gallery (element) {
   this.prevBtn = getElement('.prev-btn')
 
   // self reference
-  let self = this // points back to Gallery
+  // let self = this // points back to Gallery
 
   // bind functions
-  // this.openModal = this.openModal.bind(this) // points back to the Gallery
+  this.closeModal = this.closeModal.bind(this)
+  this.nextImage = this.nextImage.bind(this)
+  this.prevImage = this.prevImage.bind(this)
+  this.setImage = this.setImage.bind(this)
 
   // container event
   this.container.addEventListener('click', function (e) {
@@ -23,11 +26,15 @@ function Gallery (element) {
     if(e.target.classList.contains('img')) {
       this.openModal(e.target, this.list)
     }
-    
-  }.bind(this))
+  }.bind(this)) // same as this.openModal = this.openModal.bind(this)
 }
 
 // FUNCTIONS
+Gallery.prototype.setMainImage = function(selectedImage) {
+  this.modalImg.src = selectedImage.src
+  this.imageName.textContent = selectedImage.title
+}
+
 Gallery.prototype.openModal = function(selectedImage, list) {
   this.setMainImage(selectedImage)
   this.modalImages.innerHTML = list.map(image => {
@@ -41,11 +48,45 @@ Gallery.prototype.openModal = function(selectedImage, list) {
       />`
   }).join('')
   this.modal.classList.add('open')
+  this.closeBtn.addEventListener('click', this.closeModal)
+  this.nextBtn.addEventListener('click', this.nextImage)
+  this.prevBtn.addEventListener('click', this.prevImage)
+  this.modalImages.addEventListener('click', this.setImage)
 }
 
-Gallery.prototype.setMainImage = function(selectedImage) {
-  this.modalImg.src = selectedImage.src
-  this.imageName.textContent = selectedImage.title
+Gallery.prototype.closeModal = function () {
+  this.modal.classList.remove('open')
+  // remove event listeners
+  this.closeBtn.removeEventListener('click', this.closeModal)
+  this.nextBtn.removeEventListener('click', this.nextImage)
+  this.prevBtn.removeEventListener('click', this.prevImage)
+  this.modalImages.removeEventListener('click', this.setImage)
+}
+
+Gallery.prototype.nextImage = function () {
+  // get the image with class of selected
+  const selectedImage = this.modalImages.querySelector('.selected')
+  const next = selectedImage.nextElementSibling || this.modalImages.firstElementChild
+  selectedImage.classList.remove('selected')
+  next.classList.add('selected')
+  this.setMainImage(next)
+}
+
+Gallery.prototype.prevImage = function () {
+  // get the image with class of selected
+  const selectedImage = this.modalImages.querySelector('.selected')
+  const prev = selectedImage.previousElementSibling || this.modalImages.lastElementChild
+  selectedImage.classList.remove('selected')
+  prev.classList.add('selected')
+  this.setMainImage(prev)
+}
+
+Gallery.prototype.setImage = function(e) {
+  this.setMainImage(e.target)
+
+  const selectedImage = this.modalImages.querySelector('.selected')
+  selectedImage.classList.remove('selected')
+  e.target.classList.add('selected')
 }
 
 // query Selector function
